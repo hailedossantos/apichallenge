@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
 from django.http import JsonResponse
 
@@ -13,7 +14,7 @@ def getTowns(request):
                 district_code = 2,
                 town_code = 137,
                 town_name = "Maël-Carhaix",
-                population = 1.580)
+                population = 1580)
     town1.save()
     town2 = Town(region_code = 11,
                 region_name = "Île-de-France",
@@ -21,7 +22,7 @@ def getTowns(request):
                 district_code = 3,
                 town_code = 66,
                 town_name = "Saint-Denis",
-                population = 111.752)
+                population = 111752)
     town2.save()
     town3 = Town(region_code = 11,
                 region_name = "Île-de-France",
@@ -29,7 +30,17 @@ def getTowns(request):
                 district_code = 1,
                 town_code = 108,
                 town_name = "Paris 8e  Arrondissement",
-                population = 38.902)
+                population = 38902)
     town3.save()
     towns = Town.objects.values()
+    paginator = Paginator(towns, 1)
+    page = request.GET.get('page')
+    try:
+        towns = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        towns = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        towns = paginator.page(paginator.num_pages)
     return JsonResponse(dict(towns_list = list(towns)))
